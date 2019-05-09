@@ -5,11 +5,8 @@ import MySQLdb
 
 
 app = Flask(__name__)
-device = "/dev/ttyUSB0"
-arduino = serial.Serial(device, 9600)
+device = "/dev/ttyUSB1"
 
-data=arduino.readline()
-print(data)
 
 @app.route('/temperature', methods=['POST'])
 def temperature():
@@ -24,7 +21,8 @@ def fan():
     #get the room temperature
     dbConn = MySQLdb.connect("localhost","root","password","tempdb") or die ("Could not connect to database")
     print(dbConn)
-    
+    arduino = serial.Serial(device, 9600)
+      
     with dbConn:
         cursor = dbConn.cursor()
         cursor.execute("SELECT Temperature FROM tempLog ORDER BY TempId DESC LIMIT 1")
@@ -33,32 +31,32 @@ def fan():
         cursor.close()
     #check the threshold value
         threshold = request.form['threshold']
+        fanStatus =""
     # determine to turn on or off according to the value
     #0 to turn off the fan and 1 to turn on the fan
-        if(threshold<record):
-            arduino.write('%d'%0)# turn off the fan if room temp is less than outside temp
+        if(threshold<record[0]):
+            arduino.write('%d'%1)# turn on the fan if room temp is higher than outside temp
+            fanStatus = "Off"
         else:
-            arduino.write('%d'%1)# turn on fan if the room temp is higher than outside temp
-            
+            arduino.write('%d'%0)# turn off fan if the room temp is higher than outside temp
+            fanStatus = "On"
+    return render_template('fan.html', status=fanStatus , record=record[0])    
             
 @app.route('/')
 def index():
-      
-    dbConn = MySQLdb.connect("localhost","root","password","tempdb") or die ("Could not connect to database")
-
-    
-
-    with dbConn:
-        cursor = dbConn.cursor()
-        sql = "INSERT INTO tempLog (Temperature) VALUES (%s)"
-        data=("25")
-        cursor.execute("INSERT INTO tempLog (Temperature) VALUES (%s)" ,[data])
-        #cursor.execute(sql,data)
-        dbConn.commit()
-        cursor.close()
+        arduino = serial.Serial(device, 9600)
+        data = arduino.readline()
+        print(data)
+        dbConn = MySQLdb.connect("localhost","root","password","tempdb") or die ("Could not connect to database")
+        with dbConn:
+            cursor = dbConn.cursor()
+            cursor.execute("INSERT INTO tempLog (Temperature) VALUES (%s)" ,[data])
+            dbConn.commit()
+            cursor.close()
        
 
-    return render_template('index.html')
+    
+        return render_template('index.html')
                                
 
 
