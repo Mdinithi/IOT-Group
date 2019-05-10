@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>Current Temperature</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+<section class="container">
+    <h1> The current temperature (C) is : {{ temp }} degrees.</h1>
+    <form method="POST" action="/fan">
+        <div class="form-group">
+            <label for="threshold">Temperature Threshold </label>
+            <input type="number" class="form-control" id="threshold" placeholder="Enter Threshold">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</section>
+</body>
+</html>
